@@ -1,4 +1,9 @@
 import streamlit as st
+import pandas as pd
+import numpy as np
+import openpyxl
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Title
 st.title('Gestão da Aprendizagem - Bahia')
@@ -11,10 +16,10 @@ st.set_page_config(page_title="App Streamlit", layout="wide")
 
 st.title("📊 GA - Bahia")
 st.write("👨‍💻 Autor: **Marllon Gama Quintaes**")
-st.write("🎯 Tema: **Análise dos dados da Gestão da Aprendizagem da Secretaria de Educação do Estado da Bahia**")
+st.write("🎯 Tema: **Análise dos dados da Gestão da Aprendizagem da Secretaria de Educação do Estado da Bahia - Núcleo Territorial Educacional 2, Velho Chico**")
 
 # Estrutura de seções
-menu = st.sidebar.radio("📂 Seções", ["Introdução", "Carregar Planilha", "Visualizar Dados", "Gráficos", "Conclusões"])
+menu = st.sidebar.radio("📂 Seções", ["Introdução", "Visualizar Dados", "Gráficos"])
 
 # Introdução
 if menu == "Introdução":
@@ -26,11 +31,11 @@ if menu == "Introdução":
         st.info("Você pode navegar pelas seções usando o menu lateral à esquerda.")
 
 # Dados
-elif menu == "Dados":
+elif menu == "Visualizar Dados":
     st.header("📂 Visualização e Estatísticas dos Dados")
 
     # Leitura do dataset
-    df = pd.read_csv("base_indicadores_2025_v4.csv")
+    df = pd.read_excel("GA_BA_NTE02.xlsx")
 
     # Exibir primeiras linhas
     st.subheader("🔹 Pré-visualização dos Dados")
@@ -48,31 +53,73 @@ elif menu == "Dados":
 # Gráficos
 elif menu == "Gráficos":
     st.header("📊 Visualizações Gráficas")
-    df = pd.read_csv("base_indicadores_2025_v4.csv")
+    df = pd.read_excel("GA_BA_NTE02.xlsx")
 
-    # Gráfico 1: Custo médio por região
-    with st.expander("📍 Gráfico 1 - Custo médio por região"):
-        avg_charges = df.groupby("region")["charges"].mean().sort_values()
-        st.bar_chart(avg_charges)
+    # Gráfico 1: 
+    with st.expander("📍 1a Avaliação - Nota média em Linguagens por Modalidade"):
+        avg_pt1 = df.groupby("modalidade")["prof_1av_linguagens"].mean().sort_values()
+        st.bar_chart(avg_pt1)
+    
+    with st.expander("📍 2a Avaliação - Nota média em Linguagens por Modalidade"):
+        avg_pt2 = df.groupby("modalidade")["prof_2av_linguagens"].mean().sort_values()
+        st.bar_chart(avg_pt2)
 
-    # Gráfico 2: Dispersão - idade x custo
-    with st.expander("📈 Gráfico 2 - Dispersão entre Idade e Custo do Seguro"):
-        fig, ax = plt.subplots()
-        ax.scatter(df["age"], df["charges"], alpha=0.6)
-        ax.set_xlabel("Idade")
-        ax.set_ylabel("Custo do Seguro (charges)")
-        ax.set_title("Dispersão: Idade x Custo do Seguro")
-        st.pyplot(fig)
+    with st.expander("📍 1a Avaliação - Nota média em Matemática por Modalidade"):
+        avg_mt1 = df.groupby("modalidade")["prof_1av_matemática"].mean().sort_values()
+        st.bar_chart(avg_mt1)
+    
+    with st.expander("📍 2a Avaliação - Nota média em Matemática por Modalidade"):
+        avg_mt2 = df.groupby("modalidade")["prof_2av_matemática"].mean().sort_values()
+        st.bar_chart(avg_mt2)
 
-# Conclusões
-elif menu == "Conclusões":
-    st.header("📝 Conclusões")
-    st.write("""
-    - Há uma **tendência de aumento no custo do seguro** com a idade e com o hábito de fumar.  
-    - As regiões apresentam **variações médias de custo**, possivelmente ligadas a fatores socioeconômicos.  
-    - Este MVP cumpre os requisitos da **Etapa 3**, incluindo tabela descritiva e visualizações gráficas.
-    """)
-    st.success("✅ MVP completo e funcional!")
+    # Calcular médias por modalidade
+    df_medias = df.groupby("modalidade")[[
+        "prof_1av_linguagens", "prof_2av_linguagens",
+        "prof_1av_matemática", "prof_2av_matemática"
+    ]].mean().reset_index()
+
+    # Transformar para formato longo
+    df_long = df_medias.melt(id_vars="modalidade",
+                            var_name="Avaliacao_Disciplina",
+                            value_name="Nota Média")
+
+    # Separar avaliação e disciplina
+    df_long[["Avaliacao", "Disciplina"]] = df_long["Avaliacao_Disciplina"].str.extract(r"(1av|2av)_(.*)")
+    df_long["Avaliacao"] = df_long["Avaliacao"].map({"1av": "1ª Avaliação", "2av": "2ª Avaliação"})
+    df_long["Disciplina"] = df_long["Disciplina"].str.replace("_", " ").str.capitalize()
+
+    # Criar uma coluna combinada (Disciplina + Avaliação)
+    df_long["Legenda"] = df_long["Disciplina"] + " - " + df_long["Avaliacao"]
+
+    # Gráfico
+    with st.expander("📊 Média de Proficiência por Modalidade e Avaliação"):
+        plt.figure(figsize=(12, 6))
+        ax = sns.barplot(
+            data=df_long,
+            x="modalidade",
+            y="Nota Média",
+            hue="Legenda",
+            palette="viridis",
+            ci=None
+        )
+
+        # Adicionar rótulos nas barras
+        for p in ax.patches:
+            ax.text(
+                p.get_x() + p.get_width() / 2,
+                p.get_height() + 0.5,
+                f"{p.get_height():.1f}",
+                ha="center",
+                va="bottom",
+                fontsize=9
+            )
+
+        plt.title("Média de Proficiência por Modalidade (Linguagens e Matemática - 1ª e 2ª Avaliação)")
+        plt.xlabel("Modalidade")
+        plt.ylabel("Nota Média")
+        plt.xticks(rotation=45)
+        plt.legend(title="Disciplina e Avaliação")
+        st.pyplot(plt)
 
 # Rodapé
 st.markdown("---")
