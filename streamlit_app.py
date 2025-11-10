@@ -27,6 +27,12 @@ if menu == "Introdução":
         st.header("📖 Introdução")
         st.write("""
     Os dados aqui apresentados são relacionados a proficiencia dos estudantes da rede estadual da Bahia.
+
+    O Projeto de Gestão da Aprendizagem da Bahia é uma iniciativa da Secretaria da Educação do Estado da Bahia (SEC-BA) voltada para o fortalecimento da gestão pedagógica e o aprimoramento dos resultados de aprendizagem dos estudantes da rede estadual. O projeto busca integrar dados educacionais em uma plataforma acessível e interativa, favorecendo a análise de indicadores, o acompanhamento das escolas e a tomada de decisões baseada em evidências.
+
+    A rede estadual de ensino da Bahia está organizada em Núcleos Territoriais de Educação (NTEs), que funcionam como instâncias regionais de coordenação e apoio às escolas. Cada NTE abrange um conjunto de municípios e unidades escolares, atuando como elo entre as escolas e a Secretaria. Essa estrutura descentralizada permite que a gestão educacional considere as particularidades regionais, garantindo maior proximidade e efetividade nas ações de monitoramento e intervenção.
+
+    No contexto deste projeto, os NTEs têm papel essencial na análise e acompanhamento dos indicadores de desempenho, na articulação das ações pedagógicas e na implementação de estratégias de melhoria da aprendizagem. Para fins de demonstração e viabilidade técnica, o aplicativo desenvolvido em Streamlit apresenta, neste momento, apenas os dados referentes ao Núcleo Territorial de Educação 2 – Velho Chico. Essa limitação deve-se ao tamanho da base de dados completa, que excede a capacidade ideal de processamento da plataforma. Ainda assim, o app mantém o propósito de ilustrar a estrutura e as funcionalidades planejadas para o monitoramento da aprendizagem em toda a rede estadual.
         """)
         st.info("Você pode navegar pelas seções usando o menu lateral à esquerda.")
 
